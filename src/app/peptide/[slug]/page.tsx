@@ -2,8 +2,9 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Brain, Check, Flame, Heart, Shield, Target } from "lucide-react";
 import { getPeptide, peptides } from "@/lib/data/peptides";
-import { PeptideOrbit } from "@/components/visuals/peptide-orbit";
 import { PeptideTabs } from "./tabs";
+import { InteractiveMolecule } from "@/components/visuals/interactive-molecule";
+import { Grain } from "@/components/effects/grain";
 
 type Params = { slug: string };
 
@@ -35,7 +36,11 @@ export default async function PeptidePage({ params }: { params: Promise<Params> 
                     : "[background:linear-gradient(135deg,#a78bfa_0%,#8b5cf6_55%,#ec4899_140%)]"
           }`}
         />
-        <div className="relative z-10 px-4 md:px-8 pt-6 pb-14 md:pt-10 md:pb-20">
+        <Grain opacity={0.07} />
+        <div className="pointer-events-none absolute -top-24 right-10 size-72 rounded-full bg-white/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -left-10 size-80 rounded-full bg-white/10 blur-3xl" />
+
+        <div className="relative z-10 px-4 md:px-8 pt-6 pb-16 md:pt-10 md:pb-24">
           <div className="flex items-center justify-between text-white">
             <Link
               href="/explore"
@@ -50,7 +55,7 @@ export default async function PeptidePage({ params }: { params: Promise<Params> 
           </div>
 
           <div className="mt-6 flex flex-col md:flex-row md:items-center gap-6 md:gap-10">
-            <PeptideOrbit size={220} tone={peptide.color} className="drop-shadow-2xl shrink-0" />
+            <InteractiveMolecule size={260} tone={peptide.color} className="md:shrink-0" />
             <div className="text-white">
               <h1
                 className="text-4xl md:text-5xl font-semibold tracking-tight leading-[1.05]"
@@ -61,8 +66,13 @@ export default async function PeptidePage({ params }: { params: Promise<Params> 
               <span className="mt-3 inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-xs font-medium backdrop-blur-sm">
                 Peptide · {peptide.category}
               </span>
-              <p className="mt-4 max-w-xl text-sm md:text-base text-white/90">
-                {peptide.tagline}
+              <p className="mt-4 max-w-xl text-sm md:text-base text-white/90">{peptide.tagline}</p>
+              <p className="mt-4 text-xs text-white/70">
+                Drag the molecule to rotate ·{" "}
+                <kbd className="inline-flex items-center rounded border border-white/30 bg-white/10 px-1.5 py-0.5 text-[10px]">
+                  ?
+                </kbd>{" "}
+                for shortcuts
               </p>
             </div>
           </div>
@@ -70,7 +80,7 @@ export default async function PeptidePage({ params }: { params: Promise<Params> 
       </section>
 
       {/* Tabs */}
-      <section className="px-4 md:px-8 -mt-6">
+      <section className="px-4 md:px-8 -mt-8 md:-mt-10 relative z-20">
         <div className="rounded-3xl bg-surface border border-border shadow-card overflow-hidden">
           <PeptideTabs>
             {{
@@ -83,7 +93,10 @@ export default async function PeptidePage({ params }: { params: Promise<Params> 
                     {peptide.mechanism.map((m) => {
                       const Icon = iconMap[m.icon];
                       return (
-                        <div key={m.title} className="rounded-2xl border border-border bg-surface-muted/60 p-4">
+                        <div
+                          key={m.title}
+                          className="rounded-2xl border border-border bg-surface-muted/60 p-4"
+                        >
                           <div
                             className={`flex size-10 items-center justify-center rounded-xl text-white ${
                               m.icon === "brain"
@@ -104,8 +117,8 @@ export default async function PeptidePage({ params }: { params: Promise<Params> 
                     })}
                   </div>
 
-                  <div className="rounded-2xl bg-brand-50/70 border border-brand-100 p-5">
-                    <p className="text-xs uppercase tracking-[0.14em] text-brand-700 font-semibold">
+                  <div className="rounded-2xl bg-brand-50/70 border border-brand-100 p-5 dark:bg-brand-500/10 dark:border-brand-400/30">
+                    <p className="text-xs uppercase tracking-[0.14em] text-brand-700 font-semibold dark:text-brand-300">
                       Key Potential Benefits
                     </p>
                     <ul className="mt-3 grid sm:grid-cols-2 gap-2">
@@ -132,13 +145,18 @@ export default async function PeptidePage({ params }: { params: Promise<Params> 
                   <h3 className="text-base font-semibold text-ink-900">What users report</h3>
                   <div className="grid sm:grid-cols-2 gap-3">
                     {peptide.benefits.map((b) => (
-                      <div key={b} className="flex items-start gap-3 rounded-2xl border border-border bg-surface-muted/60 p-4">
-                        <span className="flex size-8 items-center justify-center rounded-xl bg-mint-100 text-mint-600">
+                      <div
+                        key={b}
+                        className="flex items-start gap-3 rounded-2xl border border-border bg-surface-muted/60 p-4"
+                      >
+                        <span className="flex size-8 items-center justify-center rounded-xl bg-mint-100 text-mint-600 dark:bg-mint-500/15 dark:text-mint-300">
                           <Check size={16} />
                         </span>
                         <div>
                           <p className="text-sm font-semibold text-ink-900">{b}</p>
-                          <p className="mt-0.5 text-xs text-ink-500">Consistently reported across studies.</p>
+                          <p className="mt-0.5 text-xs text-ink-500">
+                            Consistently reported across studies.
+                          </p>
                         </div>
                       </div>
                     ))}
@@ -162,7 +180,10 @@ export default async function PeptidePage({ params }: { params: Promise<Params> 
                   {peptide.mechanism.map((m) => {
                     const Icon = iconMap[m.icon];
                     return (
-                      <div key={m.title} className="flex items-start gap-4 rounded-2xl border border-border p-5">
+                      <div
+                        key={m.title}
+                        className="flex items-start gap-4 rounded-2xl border border-border p-5"
+                      >
                         <div
                           className={`flex size-12 items-center justify-center rounded-2xl text-white ${
                             m.icon === "brain"
@@ -200,7 +221,8 @@ export default async function PeptidePage({ params }: { params: Promise<Params> 
                     </div>
                   ))}
                   <p className="text-xs text-ink-400">
-                    Citations sourced from peer-reviewed publications. Results may vary — consult a licensed clinician.
+                    Citations sourced from peer-reviewed publications. Results may vary — consult a
+                    licensed clinician.
                   </p>
                 </div>
               ),

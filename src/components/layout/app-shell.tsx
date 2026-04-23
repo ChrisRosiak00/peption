@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Bell,
+  CalendarRange,
   Command,
   Compass,
   Heart,
@@ -20,11 +21,15 @@ import { cn } from "@/lib/utils";
 import { Logo } from "@/components/brand/logo";
 import { CommandPalette } from "@/components/cmdk/command-palette";
 import { ToastProvider } from "@/components/toast/toaster";
+import { ConfettiProvider } from "@/components/effects/confetti";
+import { ShortcutsOverlay } from "@/components/shortcuts/shortcuts-overlay";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { useEffect, useState } from "react";
 
 const nav = [
   { href: "/", label: "Home", icon: Home },
   { href: "/explore", label: "Explore", icon: Compass },
+  { href: "/plan", label: "Plan", icon: CalendarRange },
   { href: "/track", label: "Track", icon: LineChart },
   { href: "/community", label: "Community", icon: Users },
   { href: "/profile", label: "Profile", icon: User },
@@ -39,71 +44,77 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (hideShell) {
     return (
       <ToastProvider>
-        {children}
-        <CommandPalette />
+        <ConfettiProvider>
+          {children}
+          <CommandPalette />
+          <ShortcutsOverlay />
+        </ConfettiProvider>
       </ToastProvider>
     );
   }
 
   return (
     <ToastProvider>
-      <div className="flex min-h-screen">
-        {/* Desktop side nav */}
-        <aside className="hidden lg:flex lg:w-[260px] xl:w-[280px] shrink-0 flex-col border-r border-border bg-surface/70 backdrop-blur-sm">
-          <div className="flex flex-col gap-8 px-6 py-6 h-full sticky top-0">
-            <Link href="/" className="flex items-center">
-              <Logo size="md" />
-            </Link>
-            <nav className="flex flex-col gap-1">
-              {nav.map((item) => {
-                const Icon = item.icon;
-                const active = isActive(pathname, item.href);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors",
-                      active
-                        ? "bg-brand-50 text-brand-700"
-                        : "text-ink-600 hover:text-ink-900 hover:bg-ink-50"
-                    )}
-                  >
-                    <Icon size={18} />
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
+      <ConfettiProvider>
+        <div className="flex min-h-screen">
+          {/* Desktop side nav */}
+          <aside className="hidden lg:flex lg:w-[260px] xl:w-[280px] shrink-0 flex-col border-r border-border bg-surface/70 backdrop-blur-sm">
+            <div className="flex flex-col gap-8 px-6 py-6 h-full sticky top-0">
+              <Link href="/" className="flex items-center">
+                <Logo size="md" />
+              </Link>
+              <nav className="flex flex-col gap-1">
+                {nav.map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(pathname, item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors",
+                        active
+                          ? "bg-brand-50 text-brand-700"
+                          : "text-ink-600 hover:text-ink-900 hover:bg-ink-50"
+                      )}
+                    >
+                      <Icon size={18} />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </nav>
 
-            <div className="mt-2">
-              <p className="px-3.5 text-[11px] uppercase tracking-[0.12em] text-ink-400 font-semibold">
-                Your tools
-              </p>
-              <div className="mt-2 flex flex-col gap-1">
-                <SideLink href="/ai" icon={Sparkles} label="AI Assistant" accent />
-                <SideLink href="/pricing" icon={Heart} label="Membership" />
-                <SideLink href="/settings" icon={MessageCircle} label="Settings" />
+              <div className="mt-2">
+                <p className="px-3.5 text-[11px] uppercase tracking-[0.12em] text-ink-400 font-semibold">
+                  Your tools
+                </p>
+                <div className="mt-2 flex flex-col gap-1">
+                  <SideLink href="/ai" icon={Sparkles} label="AI Assistant" accent />
+                  <SideLink href="/pricing" icon={Heart} label="Membership" />
+                  <SideLink href="/settings" icon={MessageCircle} label="Settings" />
+                </div>
+              </div>
+
+              <div className="mt-auto">
+                <UpgradeCard />
               </div>
             </div>
+          </aside>
 
-            <div className="mt-auto">
-              <UpgradeCard />
-            </div>
+          {/* Main column */}
+          <div className="flex flex-col flex-1 min-w-0">
+            <TopBar />
+            <main className="flex-1 pb-28 lg:pb-0">{children}</main>
           </div>
-        </aside>
 
-        {/* Main column */}
-        <div className="flex flex-col flex-1 min-w-0">
-          <TopBar />
-          <main className="flex-1 pb-28 lg:pb-0">{children}</main>
+          {/* Mobile bottom nav */}
+          <MobileBottomNav pathname={pathname ?? "/"} />
         </div>
 
-        {/* Mobile bottom nav */}
-        <MobileBottomNav pathname={pathname ?? "/"} />
-      </div>
-
-      <CommandPalette />
+        <CommandPalette />
+        <ShortcutsOverlay />
+      </ConfettiProvider>
     </ToastProvider>
   );
 }
@@ -164,11 +175,11 @@ function TopBar() {
       >
         <Search size={14} />
         <span>Search peptides, pages…</span>
-        <kbd className="inline-flex items-center gap-0.5 rounded border border-border bg-white px-1.5 py-0.5 text-[10px] font-medium text-ink-500">
+        <kbd className="inline-flex items-center gap-0.5 rounded border border-border bg-surface px-1.5 py-0.5 text-[10px] font-medium text-ink-500">
           {isMac ? <Command size={10} /> : "Ctrl"} K
         </kbd>
       </button>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         <button
           onClick={openPalette}
           aria-label="Search"
@@ -183,6 +194,7 @@ function TopBar() {
           <Sparkles size={14} />
           Ask AI
         </Link>
+        <ThemeToggle />
         <button
           aria-label="Notifications"
           className="relative inline-flex items-center justify-center rounded-full size-9 text-ink-600 hover:text-ink-900 hover:bg-ink-100 transition-colors"
@@ -204,10 +216,11 @@ function TopBar() {
 }
 
 function MobileBottomNav({ pathname }: { pathname: string }) {
+  const mobileItems = nav.filter((i) => i.label !== "Plan");
   return (
     <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-surface/90 backdrop-blur-xl">
       <div className="flex items-center justify-around px-2 pt-2 pb-[max(env(safe-area-inset-bottom),12px)]">
-        {nav.slice(0, 2).map((item) => (
+        {mobileItems.slice(0, 2).map((item) => (
           <NavTab key={item.href} item={item} active={isActive(pathname, item.href)} />
         ))}
         <Link
@@ -217,7 +230,7 @@ function MobileBottomNav({ pathname }: { pathname: string }) {
         >
           <Plus size={20} />
         </Link>
-        {nav.slice(2, 4).map((item) => (
+        {mobileItems.slice(2, 4).map((item) => (
           <NavTab key={item.href} item={item} active={isActive(pathname, item.href)} />
         ))}
       </div>

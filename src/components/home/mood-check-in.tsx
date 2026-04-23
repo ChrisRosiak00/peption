@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/toast/toaster";
+import { useConfetti } from "@/components/effects/confetti";
 
 const moods = [
   { v: 1, face: "😣", label: "Rough" },
@@ -17,15 +18,26 @@ const moods = [
 export function MoodCheckIn() {
   const [picked, setPicked] = useState<number | null>(5);
   const [checkedIn, setCheckedIn] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
   const { toast } = useToast();
+  const { fire } = useConfetti();
 
   function handleCheckIn() {
     setCheckedIn(true);
+    const rect = btnRef.current?.getBoundingClientRect();
+    fire({
+      x: rect ? rect.left + rect.width / 2 : undefined,
+      y: rect ? rect.top + rect.height / 2 : undefined,
+      count: 160,
+    });
     toast({
       kind: "success",
       title: "Check-in logged",
       description: "Streak extended to 22 days. Keep it going.",
     });
+    if ("vibrate" in navigator) {
+      navigator.vibrate?.(12);
+    }
   }
 
   return (
@@ -54,6 +66,7 @@ export function MoodCheckIn() {
       </div>
 
       <Button
+        ref={btnRef}
         variant="gradient"
         size="lg"
         className="mt-4 w-full"

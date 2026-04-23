@@ -1,5 +1,13 @@
 import Link from "next/link";
-import { ArrowRight, ChevronRight, Sparkles, TrendingDown, TrendingUp } from "lucide-react";
+import {
+  ArrowRight,
+  CalendarRange,
+  ChevronRight,
+  Flame,
+  Sparkles,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { MoodCheckIn } from "@/components/home/mood-check-in";
 import { Sparkline } from "@/components/charts/sparkline";
@@ -13,6 +21,8 @@ import { CursorGlow } from "@/components/effects/cursor-glow";
 import { Floating } from "@/components/effects/floating";
 import { Grain } from "@/components/effects/grain";
 import { WelcomeSplash } from "@/components/onboarding/welcome-splash";
+import { DoseCountdown } from "@/components/home/dose-countdown";
+import { LiveTicker } from "@/components/home/live-ticker";
 
 export default function HomePage() {
   const featured = peptides.slice(0, 3);
@@ -20,43 +30,59 @@ export default function HomePage() {
   return (
     <>
       <WelcomeSplash />
-      <div className="mx-auto w-full max-w-6xl px-4 md:px-6 py-6 md:py-10 space-y-8">
-        <HeroGreeting name={demoUser.name.split(" ")[0]} />
+      <div className="relative mx-auto w-full max-w-6xl px-4 md:px-6 py-6 md:py-10 space-y-8">
+        <div className="pointer-events-none absolute inset-0 dark-stars" aria-hidden />
 
-        {/* Protocol + check-in grid */}
+        <div className="relative">
+          <div className="flex items-start justify-between gap-4">
+            <HeroGreeting name={demoUser.name.split(" ")[0]} />
+            <div className="hidden md:flex pt-6">
+              <LiveTicker />
+            </div>
+          </div>
+          <div className="md:hidden mt-3">
+            <LiveTicker />
+          </div>
+        </div>
+
+        {/* Top row: Protocol hero + check-in */}
         <section className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-12">
-          <Reveal delay={0.05} className="lg:col-span-6">
+          <Reveal delay={0.05} className="lg:col-span-7">
             <Link
               href="/peptide/retatrutide"
-              className="relative group block rounded-3xl p-6 md:p-7 text-white overflow-hidden [background:linear-gradient(135deg,#8b5cf6_0%,#7c3aed_40%,#ec4899_120%)] shadow-[0_30px_60px_-30px_rgba(124,58,237,0.55)]"
+              className="relative group block rounded-3xl p-6 md:p-8 text-white overflow-hidden [background:linear-gradient(135deg,#6d28d9_0%,#7c3aed_40%,#ec4899_120%)] shadow-[0_30px_60px_-30px_rgba(124,58,237,0.55)]"
             >
               <Grain opacity={0.08} />
-              <CursorGlow size={420} opacity={0.55} color="255, 255, 255" />
-              <div className="relative z-10 flex items-start justify-between gap-6">
+              <CursorGlow size={520} opacity={0.55} color="255, 255, 255" />
+              <div className="relative z-10 grid md:grid-cols-[1fr_auto] gap-6 md:gap-10 items-start">
                 <div>
                   <p className="text-xs uppercase tracking-[0.14em] text-white/80 font-semibold">
                     Current Protocol
                   </p>
                   <p
-                    className="mt-3 text-3xl font-semibold tracking-tight"
+                    className="mt-2 text-3xl md:text-4xl font-semibold tracking-tight"
                     style={{ fontFamily: "var(--font-display)" }}
                   >
                     {demoUser.currentProtocol.name}
                   </p>
                   <p className="mt-1 text-sm text-white/80">{demoUser.currentProtocol.dose}</p>
-                  <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-xs font-medium backdrop-blur-md">
+                  <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-xs font-medium backdrop-blur-md">
                     {demoUser.currentProtocol.weekOf}
                   </span>
                 </div>
-                <Floating distance={6} duration={7}>
-                  <PeptideOrbit size={150} tone="brand" className="shrink-0 opacity-95 drop-shadow-2xl" />
+                <Floating distance={7} duration={7} className="justify-self-end">
+                  <PeptideOrbit
+                    size={140}
+                    tone="brand"
+                    className="shrink-0 opacity-95 drop-shadow-2xl"
+                  />
                 </Floating>
               </div>
 
-              <div className="relative z-10 mt-6 grid grid-cols-3 gap-2 text-white/90">
-                <MiniStat label="Next dose" value="Thu" />
-                <MiniStat label="Streak" value="22d" />
-                <MiniStat label="Adherence" value="96%" />
+              <div className="relative z-10 mt-6 grid grid-cols-3 gap-2">
+                <MiniStat label="Next dose" value="Thu" hint="8:30 PM" />
+                <MiniStat label="Streak" value="22d" hint="keep going" icon={<Flame size={12} />} />
+                <MiniStat label="Adherence" value="96%" hint="last 12 wk" />
               </div>
 
               <div className="relative z-10 mt-6 flex items-center justify-between text-sm text-white/90">
@@ -68,10 +94,52 @@ export default function HomePage() {
             </Link>
           </Reveal>
 
-          <Reveal delay={0.1} className="lg:col-span-6">
+          <Reveal delay={0.1} className="lg:col-span-5">
             <Card>
               <MoodCheckIn />
             </Card>
+          </Reveal>
+        </section>
+
+        {/* Countdown + plan CTA */}
+        <section className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-12">
+          <Reveal delay={0.04} className="lg:col-span-7">
+            <Card>
+              <DoseCountdown />
+            </Card>
+          </Reveal>
+          <Reveal delay={0.08} className="lg:col-span-5">
+            <Link
+              href="/plan"
+              className="group relative h-full block rounded-3xl p-6 border border-border bg-surface shadow-card overflow-hidden hover:-translate-y-0.5 transition-transform"
+            >
+              <div className="absolute inset-0 gradient-brand-soft opacity-80" />
+              <Grain opacity={0.04} />
+              <CursorGlow size={380} opacity={0.28} />
+              <div className="relative z-10 flex items-start justify-between gap-4 h-full">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.14em] text-brand-700 font-semibold">
+                    Protocol Planner
+                  </p>
+                  <h3
+                    className="mt-2 text-xl font-semibold tracking-tight text-ink-900"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    Your week, visualized.
+                  </h3>
+                  <p className="mt-2 text-sm text-ink-600">
+                    Doses, measurements, labs and check-ins — laid out on a single calm page.
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    <span className="chip">3 doses this week</span>
+                    <span className="chip chip-mint">Mon check-in done</span>
+                  </div>
+                </div>
+                <div className="flex size-12 items-center justify-center rounded-2xl [background:linear-gradient(135deg,#a78bfa,#8b5cf6,#ec4899)] text-white shadow-[0_10px_30px_-10px_rgba(124,58,237,0.6)]">
+                  <CalendarRange size={20} />
+                </div>
+              </div>
+            </Link>
           </Reveal>
         </section>
 
@@ -185,7 +253,7 @@ export default function HomePage() {
               <Reveal key={p.slug} delay={0.04 + i * 0.04}>
                 <Link
                   href={`/peptide/${p.slug}`}
-                  className="group surface-card p-5 transition-all hover:border-brand-200 hover:shadow-[0_20px_40px_-24px_rgba(124,58,237,0.35)] hover:-translate-y-0.5 block"
+                  className="group surface-card transition-all hover:border-brand-200 hover:shadow-[0_20px_40px_-24px_rgba(124,58,237,0.35)] hover:-translate-y-0.5 block"
                 >
                   <div className="flex items-center justify-between">
                     <span className={`chip ${chipFor(p.color)}`}>{p.category}</span>
@@ -266,17 +334,31 @@ export default function HomePage() {
 
 function Suggestion({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center rounded-full bg-white/80 backdrop-blur border border-brand-100 px-3 py-1 text-xs text-brand-700">
+    <span className="inline-flex items-center rounded-full bg-surface/80 backdrop-blur border border-brand-100 px-3 py-1 text-xs text-brand-700">
       {children}
     </span>
   );
 }
 
-function MiniStat({ label, value }: { label: string; value: string }) {
+function MiniStat({
+  label,
+  value,
+  hint,
+  icon,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+  icon?: React.ReactNode;
+}) {
   return (
-    <div className="rounded-xl bg-white/10 backdrop-blur-sm px-3 py-2">
-      <p className="text-[10px] uppercase tracking-[0.12em] text-white/70 font-semibold">{label}</p>
-      <p className="mt-0.5 text-sm font-semibold">{value}</p>
+    <div className="rounded-xl bg-white/10 backdrop-blur-sm px-3 py-2.5 border border-white/10">
+      <p className="text-[10px] uppercase tracking-[0.12em] text-white/70 font-semibold flex items-center gap-1">
+        {icon}
+        {label}
+      </p>
+      <p className="mt-0.5 text-sm font-semibold text-white">{value}</p>
+      {hint && <p className="text-[10px] text-white/60">{hint}</p>}
     </div>
   );
 }

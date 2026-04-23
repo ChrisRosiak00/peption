@@ -1,26 +1,301 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Fixed brand palette */
+  --color-brand-50: #f5f3ff;
+  --color-brand-100: #ede9fe;
+  --color-brand-200: #ddd6fe;
+  --color-brand-300: #c4b5fd;
+  --color-brand-400: #a78bfa;
+  --color-brand-500: #8b5cf6;
+  --color-brand-600: #7c3aed;
+  --color-brand-700: #6d28d9;
+  --color-brand-800: #5b21b6;
+  --color-brand-900: #4c1d95;
+
+  /* Fixed accent palettes */
+  --color-mint-100: #d1fae5;
+  --color-mint-300: #6ee7b7;
+  --color-mint-500: #10b981;
+  --color-mint-600: #059669;
+  --color-blush-100: #fce7f3;
+  --color-blush-300: #f9a8d4;
+  --color-blush-500: #ec4899;
+
+  /* Themeable surfaces / ink — bound to CSS vars so .dark can swap */
+  --color-background: var(--bg-page);
+  --color-foreground: var(--text-primary);
+  --color-surface: var(--bg-surface);
+  --color-surface-muted: var(--bg-muted);
+  --color-border: var(--border-default);
+
+  --color-ink-50: var(--ink-50);
+  --color-ink-100: var(--ink-100);
+  --color-ink-200: var(--ink-200);
+  --color-ink-300: var(--ink-300);
+  --color-ink-400: var(--ink-400);
+  --color-ink-500: var(--ink-500);
+  --color-ink-600: var(--ink-600);
+  --color-ink-700: var(--ink-700);
+  --color-ink-800: var(--ink-800);
+  --color-ink-900: var(--ink-900);
+  --color-ink-950: var(--ink-950);
+
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  --font-display: var(--font-display), var(--font-sans), ui-sans-serif, system-ui;
+
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-2xl: 36px;
+}
+
+/* -------- Light theme (default) -------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-page: #faf9fc;
+  --bg-surface: #ffffff;
+  --bg-muted: #f7f6fa;
+  --text-primary: #16151f;
+  --border-default: #ece9f3;
+
+  --ink-50: #f7f6fa;
+  --ink-100: #eeedf2;
+  --ink-200: #dcdbe3;
+  --ink-300: #b9b8c7;
+  --ink-400: #9593a9;
+  --ink-500: #73718a;
+  --ink-600: #56556a;
+  --ink-700: #3a3946;
+  --ink-800: #24232f;
+  --ink-900: #16151f;
+  --ink-950: #0b0a12;
+
+  --shadow-card: 0 1px 2px rgba(16, 14, 34, 0.04), 0 8px 24px -12px rgba(76, 29, 149, 0.08);
+  --shadow-pop: 0 12px 40px -12px rgba(76, 29, 149, 0.24);
+
+  --gradient-mesh-a: #ede9fe;
+  --gradient-mesh-b: #fce7f3;
+  --gradient-mesh-c: #ddd6fe;
+  --gradient-mesh-bg: #faf9fc;
+
+  --gradient-soft-a: #ede9fe;
+  --gradient-soft-b: #f5f3ff;
+  --gradient-soft-c: #fce7f3;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* -------- Dark theme -------- */
+.dark {
+  --bg-page: #07060f;
+  --bg-surface: #11101b;
+  --bg-muted: #16151f;
+  --text-primary: #f7f6fa;
+  --border-default: #24232f;
+
+  /* Ink scale inverts so components read correctly on dark */
+  --ink-50: #1a1925;
+  --ink-100: #24232f;
+  --ink-200: #3a3946;
+  --ink-300: #56556a;
+  --ink-400: #73718a;
+  --ink-500: #9593a9;
+  --ink-600: #b9b8c7;
+  --ink-700: #dcdbe3;
+  --ink-800: #eeedf2;
+  --ink-900: #f7f6fa;
+  --ink-950: #ffffff;
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 16px 40px -12px rgba(0, 0, 0, 0.55);
+  --shadow-pop: 0 16px 50px -10px rgba(139, 92, 246, 0.4);
+
+  --gradient-mesh-a: #3b1a6b;
+  --gradient-mesh-b: #5a1645;
+  --gradient-mesh-c: #1b1a2e;
+  --gradient-mesh-bg: #07060f;
+
+  --gradient-soft-a: #261a47;
+  --gradient-soft-b: #1a142c;
+  --gradient-soft-c: #3c1838;
+
+  color-scheme: dark;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html,
+  body {
+    height: 100%;
+  }
+  body {
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: var(--color-brand-200);
+    color: var(--color-brand-900);
+  }
+  .dark ::selection {
+    background: var(--color-brand-700);
+    color: #fff;
+  }
+  html {
+    color-scheme: light;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  .surface-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    padding: 1.25rem;
+  }
+  @media (min-width: 768px) {
+    .surface-card {
+      padding: 1.5rem;
+    }
+  }
+  .gradient-brand {
+    background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 40%, #ec4899 120%);
+  }
+  .gradient-brand-soft {
+    background: linear-gradient(
+      135deg,
+      var(--gradient-soft-a) 0%,
+      var(--gradient-soft-b) 50%,
+      var(--gradient-soft-c) 100%
+    );
+  }
+  .gradient-mesh {
+    background:
+      radial-gradient(1200px 600px at 10% -10%, var(--gradient-mesh-a) 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, var(--gradient-mesh-b) 0%, transparent 60%),
+      radial-gradient(700px 400px at 50% 120%, var(--gradient-mesh-c) 0%, transparent 60%),
+      var(--gradient-mesh-bg);
+  }
+  .text-gradient {
+    background: linear-gradient(135deg, #a78bfa 0%, #ec4899 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1rem;
+    background: var(--color-brand-50);
+    color: var(--color-brand-700);
+    border: 1px solid var(--color-brand-100);
+  }
+  .dark .chip {
+    background: color-mix(in oklch, var(--color-brand-500) 14%, transparent);
+    color: var(--color-brand-300);
+    border-color: color-mix(in oklch, var(--color-brand-400) 30%, transparent);
+  }
+  .chip-mint {
+    background: var(--color-mint-100);
+    color: var(--color-mint-600);
+    border-color: #a7f3d0;
+  }
+  .dark .chip-mint {
+    background: color-mix(in oklch, var(--color-mint-500) 18%, transparent);
+    color: #86efac;
+    border-color: color-mix(in oklch, var(--color-mint-500) 40%, transparent);
+  }
+  .chip-blush {
+    background: var(--color-blush-100);
+    color: var(--color-blush-500);
+    border-color: var(--color-blush-300);
+  }
+  .dark .chip-blush {
+    background: color-mix(in oklch, var(--color-blush-500) 18%, transparent);
+    color: #f9a8d4;
+    border-color: color-mix(in oklch, var(--color-blush-500) 40%, transparent);
+  }
+  .chip-ink {
+    background: var(--ink-100);
+    color: var(--ink-700);
+    border-color: var(--ink-200);
+  }
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hidden {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  /* Subtle starfield only in dark */
+  .dark-stars {
+    background-image:
+      radial-gradient(circle at 20% 35%, rgba(167, 139, 250, 0.18) 0, rgba(167, 139, 250, 0) 1px),
+      radial-gradient(circle at 70% 15%, rgba(244, 114, 182, 0.16) 0, rgba(244, 114, 182, 0) 1px),
+      radial-gradient(circle at 88% 70%, rgba(167, 139, 250, 0.14) 0, rgba(167, 139, 250, 0) 1px),
+      radial-gradient(circle at 35% 80%, rgba(96, 165, 250, 0.14) 0, rgba(96, 165, 250, 0) 1px);
+    background-size: 280px 280px, 360px 360px, 240px 240px, 320px 320px;
+  }
+  .dark .dark-stars {
+    /* active */
+  }
+  :not(.dark) .dark-stars {
+    background-image: none;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-up {
+  animation: fade-up 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes ping-soft {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  80%,
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+.animate-ping-soft {
+  animation: ping-soft 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(139, 92, 246, 0) 0%,
+    rgba(139, 92, 246, 0.12) 50%,
+    rgba(139, 92, 246, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2.4s linear infinite;
 }
