@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/toast/toaster";
 
 const moods = [
   { v: 1, face: "😣", label: "Rough" },
@@ -15,6 +17,16 @@ const moods = [
 export function MoodCheckIn() {
   const [picked, setPicked] = useState<number | null>(5);
   const [checkedIn, setCheckedIn] = useState(false);
+  const { toast } = useToast();
+
+  function handleCheckIn() {
+    setCheckedIn(true);
+    toast({
+      kind: "success",
+      title: "Check-in logged",
+      description: "Streak extended to 22 days. Keep it going.",
+    });
+  }
 
   return (
     <div>
@@ -23,11 +35,12 @@ export function MoodCheckIn() {
 
       <div className="mt-4 grid grid-cols-5 gap-2">
         {moods.map((m) => (
-          <button
+          <motion.button
             key={m.v}
             type="button"
             onClick={() => setPicked(m.v)}
             aria-label={m.label}
+            whileTap={{ scale: 0.94 }}
             className={cn(
               "flex aspect-square items-center justify-center rounded-2xl text-xl transition-all border",
               picked === m.v
@@ -36,7 +49,7 @@ export function MoodCheckIn() {
             )}
           >
             <span aria-hidden>{m.face}</span>
-          </button>
+          </motion.button>
         ))}
       </div>
 
@@ -45,7 +58,7 @@ export function MoodCheckIn() {
         size="lg"
         className="mt-4 w-full"
         disabled={picked === null || checkedIn}
-        onClick={() => setCheckedIn(true)}
+        onClick={handleCheckIn}
       >
         {checkedIn ? "Checked in ✓" : "Check In"}
       </Button>

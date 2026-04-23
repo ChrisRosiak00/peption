@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { History, SendHorizontal, Sparkles, ThumbsDown, ThumbsUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -46,11 +47,12 @@ export function AIAssistant() {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [draft, setDraft] = useState("");
   const [typing, setTyping] = useState(false);
+  const [streamingText, setStreamingText] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages, typing]);
+  }, [messages, typing, streamingText]);
 
   function send(text: string) {
     if (!text.trim()) return;
@@ -58,18 +60,44 @@ export function AIAssistant() {
     setMessages((m) => [...m, { id, role: "user", content: text }]);
     setDraft("");
     setTyping(true);
+
+    // Simulated streaming response
     setTimeout(() => {
       setTyping(false);
-      setMessages((m) => [
-        ...m,
-        {
-          id: `${id}-r`,
-          role: "assistant",
-          time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
-          content: sampleReply(text),
-        },
-      ]);
-    }, 900);
+      const { text: reply, extra } = sampleReply(text);
+      streamReply(reply, () => {
+        setMessages((m) => [
+          ...m,
+          {
+            id: `${id}-r`,
+            role: "assistant",
+            time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+            content: (
+              <div className="space-y-2">
+                <p>{reply}</p>
+                {extra}
+              </div>
+            ),
+          },
+        ]);
+        setStreamingText("");
+      });
+    }, 600);
+  }
+
+  function streamReply(reply: string, onDone: () => void) {
+    setStreamingText("");
+    let i = 0;
+    const step = () => {
+      i += Math.max(1, Math.floor(reply.length / 90));
+      setStreamingText(reply.slice(0, i));
+      if (i < reply.length) {
+        setTimeout(step, 18);
+      } else {
+        onDone();
+      }
+    };
+    step();
   }
 
   return (
@@ -78,8 +106,11 @@ export function AIAssistant() {
         {/* Header */}
         <div className="flex items-center justify-between gap-3 px-4 md:px-6 py-4 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-2xl [background:linear-gradient(135deg,#a78bfa,#ec4899)] text-white">
+            <div className="relative flex size-10 items-center justify-center rounded-2xl [background:linear-gradient(135deg,#a78bfa,#ec4899)] text-white">
               <Sparkles size={18} />
+              <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-mint-500 border-2 border-surface">
+                <span className="absolute inset-0 rounded-full bg-mint-500 animate-ping opacity-60" />
+              </span>
             </div>
             <div>
               <p className="text-sm font-semibold text-ink-900">AI Assistant</p>
@@ -100,6 +131,7 @@ export function AIAssistant() {
             <MessageBubble key={m.id} message={m} />
           ))}
           {typing && <TypingBubble />}
+          {streamingText && <StreamingBubble text={streamingText} />}
           <div ref={endRef} />
         </div>
 
@@ -110,7 +142,7 @@ export function AIAssistant() {
               <button
                 key={s}
                 onClick={() => send(s)}
-                className="shrink-0 rounded-full bg-brand-50 text-brand-700 border border-brand-100 px-3.5 py-1.5 text-xs font-medium hover:bg-brand-100"
+                className="shrink-0 rounded-full bg-brand-50 text-brand-700 border border-brand-100 px-3.5 py-1.5 text-xs font-medium hover:bg-brand-100 transition-colors"
               >
                 {s}
               </button>
@@ -129,14 +161,15 @@ export function AIAssistant() {
               placeholder="Ask anything about peptides…"
               className="pr-12 h-12"
             />
-            <button
+            <motion.button
               type="submit"
               aria-label="Send"
+              whileTap={{ scale: 0.92 }}
               className="absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex size-9 items-center justify-center rounded-lg text-white [background:linear-gradient(135deg,#a78bfa,#8b5cf6,#ec4899)] disabled:opacity-50"
               disabled={!draft.trim()}
             >
               <SendHorizontal size={16} />
-            </button>
+            </motion.button>
           </form>
         </div>
       </div>
@@ -147,15 +180,25 @@ export function AIAssistant() {
 function MessageBubble({ message }: { message: Message }) {
   if (message.role === "user") {
     return (
-      <div className="flex justify-end">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25 }}
+        className="flex justify-end"
+      >
         <div className="max-w-[80%] rounded-2xl rounded-tr-md bg-brand-600 text-white px-4 py-3 text-sm">
           {message.content}
         </div>
-      </div>
+      </motion.div>
     );
   }
   return (
-    <div className="flex justify-start">
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
+      className="flex justify-start"
+    >
       <div className="max-w-[88%] space-y-2">
         <div className="rounded-2xl rounded-tl-md bg-surface border border-border shadow-card px-4 py-3 text-sm text-ink-800">
           {message.content}
@@ -174,6 +217,19 @@ function MessageBubble({ message }: { message: Message }) {
           >
             <ThumbsDown size={12} />
           </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function StreamingBubble({ text }: { text: string }) {
+  return (
+    <div className="flex justify-start">
+      <div className="max-w-[88%]">
+        <div className="rounded-2xl rounded-tl-md bg-surface border border-border shadow-card px-4 py-3 text-sm text-ink-800">
+          {text}
+          <span className="ml-0.5 inline-block h-4 w-[2px] align-[-2px] bg-brand-500 animate-pulse" />
         </div>
       </div>
     </div>
@@ -234,43 +290,39 @@ function ComparisonTable() {
   );
 }
 
-function sampleReply(prompt: string): React.ReactNode {
+function sampleReply(prompt: string): { text: string; extra?: React.ReactNode } {
   const p = prompt.toLowerCase();
   if (p.includes("nausea")) {
-    return (
-      <div className="space-y-2">
-        <p>Week-1 nausea is common on GLP-1s. A few practical tips:</p>
-        <ul className="list-disc pl-5 space-y-1">
-          <li>Take your shot at night so you sleep through the peak</li>
-          <li>Eat smaller, protein-forward meals</li>
-          <li>Hydrate — electrolytes help</li>
-          <li>Skip greasy/spicy foods for the first 48 hours</li>
-        </ul>
-        <p className="text-xs text-ink-500">Talk to your prescriber if it lasts past the first dose or two.</p>
-      </div>
-    );
+    return {
+      text: "Week-1 nausea is common on GLP-1s. Take your shot at night so you sleep through the peak, eat smaller protein-forward meals, hydrate with electrolytes, and skip greasy or spicy foods for the first 48 hours.",
+      extra: (
+        <p className="text-xs text-ink-500">
+          Talk to your prescriber if nausea lasts past the first dose or two.
+        </p>
+      ),
+    };
   }
   if (p.includes("dose") || p.includes("start")) {
-    return (
-      <p>
-        Most retatrutide users begin at <strong>2 mg / week</strong>, titrating up every 4 weeks
-        based on tolerance. The sweet spot for most is 6–12 mg/week by month 3–4.
-      </p>
-    );
+    return {
+      text:
+        "Most retatrutide users begin at 2 mg / week, titrating up every 4 weeks based on tolerance. The sweet spot for most is 6–12 mg/week by month 3–4.",
+    };
   }
   if (p.includes("result")) {
-    return (
-      <p>
-        Most people see noticeable appetite reduction in the first 2–3 weeks, with visible body
-        composition changes around weeks 6–8. The best outcomes come at month 4+.
-      </p>
-    );
+    return {
+      text:
+        "Most people see noticeable appetite reduction in the first 2–3 weeks, with visible body composition changes around weeks 6–8. The best outcomes come at month 4+.",
+    };
   }
-  return (
-    <p>
-      Here&apos;s what the research suggests — based on controlled trials, most metabolic peptides
-      target GLP-1 receptors to reduce appetite and improve glycemic control. Would you like me to
-      compare specific options or design a starter protocol?
-    </p>
-  );
+  if (p.includes("compare") || p.includes("semaglutide") || p.includes("tirzepatide")) {
+    return {
+      text:
+        "Semaglutide targets GLP-1 only. Tirzepatide adds GIP. Retatrutide goes further with GLP-1, GIP, and glucagon — which is why trials show the highest weight loss so far.",
+      extra: <ComparisonTable />,
+    };
+  }
+  return {
+    text:
+      "Based on controlled trials, most metabolic peptides target GLP-1 receptors to reduce appetite and improve glycemic control. Want me to compare specific options or design a starter protocol?",
+  };
 }
